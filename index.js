@@ -7,22 +7,31 @@ const adminIds = process.env.ADMIN_IDS.split(',');
 
 const bot = new TelegramBot(token, { polling: true });
 
-const app = express();
-app.get('/', (req, res) => {
-  res.send('Bot is alive!');
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Web server running on port ${PORT}`));
-
-bot.on('message', (msg) => {
+cbot.on('message', (msg) => {
+  const chatId = msg.chat.id;
   const text = msg.text;
   const from = msg.from;
 
+  // Якщо користувач пише /start
+  if (text === '/start') {
+    bot.sendMessage(chatId, `💌 Привіт!
+Це бот для пропозицій 🌸
+
+Тут можна надсилати:
+• ідеї для публікацій
+• історії чи думки
+• меми або фото
+• питання до адміністраторів
+
+👇 Просто напиши повідомлення:`);
+    return; // зупиняємо подальшу обробку
+  }
+
+  // Всі інші повідомлення надсилаємо адміністраторам
   adminIds.forEach(adminId => {
     bot.sendMessage(adminId, `📩 Нова пропозиція від користувача:\n\nІм'я: ${from.first_name}\nUsername: @${from.username || "немає"}\nID: ${from.id}\n\nТекст:\n${text}`);
     bot.sendMessage(adminId, `Тільки текст: ${text}`);
   });
 
-  bot.sendMessage(msg.chat.id, '✅ Ваше повідомлення надіслано адміністраторам!');
+  bot.sendMessage(chatId, '✅ Ваше повідомлення надіслано адміністраторам!');
 });
